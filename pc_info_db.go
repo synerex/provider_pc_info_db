@@ -83,7 +83,7 @@ func init() {
 	}
 
 	// create data_sources table
-	_, err = db.Exec(`create table if not exists data_sources(id BIGINT unsigned NOT NULL AUTO_INCREMENT, user_id BIGINT unsigned NOT NULL, name VARCHAR(256) NOT NULL, type INT NOT NULL, latitude DOUBLE, longitude DOUBLE, radius DOUBLE, opt VARCHAR(1024), foreign key fk_user_id (user_id) references users(id), primary key(id))`)
+	_, err = db.Exec(`create table if not exists data_sources(id BIGINT unsigned NOT NULL, user_id BIGINT unsigned NOT NULL, name VARCHAR(256) NOT NULL, type INT NOT NULL, latitude DOUBLE, longitude DOUBLE, radius DOUBLE, opt VARCHAR(1024), foreign key fk_user_id (user_id) references users(id), primary key(id))`)
 	if err != nil {
 		print("create data_sources table error: ")
 		print(err)
