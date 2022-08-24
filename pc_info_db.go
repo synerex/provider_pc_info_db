@@ -1,15 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"runtime"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -17,14 +13,11 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	gosocketio "github.com/googollee/go-socket.io"
 	//	"github.com/golang/protobuf/ptypes"
-	"google.golang.org/protobuf/proto"
 
 	//	"github.com/mtfelian/golang-socketio/transport"
 	//	pcounter "github.com/synerex/proto_pcounter"
 
-	protoPC "github.com/nagata-yoshiteru/proto_pcounter"
 	api "github.com/synerex/synerex_api"
 	pbase "github.com/synerex/synerex_proto"
 	sxutil "github.com/synerex/synerex_sxutil"
@@ -40,8 +33,6 @@ var (
 	port            = flag.Int("port", 10081, "HarmoVis Ext Provider Listening Port")
 	mu              = new(sync.Mutex)
 	version         = "0.02"
-	assetsDir       http.FileSystem
-	ioserv          *gosocketio.Server
 	sxServerAddress string
 	pcMu            *sync.Mutex = nil
 	pcLoop          *bool       = nil
@@ -92,7 +83,7 @@ func init() {
 	}
 
 	// create data_sources table
-	_, err = db.Exec(`create table if not exists data_sources(id BIGINT unsigned NOT NULL AUTO_INCREMENT, user_id BIGINT unsigned NOT NULL, type INT NOT NULL, latitude DOUBLE, longitude DOUBLE, radius DOUBLE, opt VARCHAR(1024), foreign key fk_user_id (user_id) references users(id), primary key(id))`)
+	_, err = db.Exec(`create table if not exists data_sources(id BIGINT unsigned NOT NULL AUTO_INCREMENT, user_id BIGINT unsigned NOT NULL, name VARCHAR(256) NOT NULL, type INT NOT NULL, latitude DOUBLE, longitude DOUBLE, radius DOUBLE, opt VARCHAR(1024), foreign key fk_user_id (user_id) references users(id), primary key(id))`)
 	if err != nil {
 		print("create data_sources table error: ")
 		print(err)
@@ -110,41 +101,7 @@ func init() {
 
 func supplyPCINFDBCallback(clt *sxutil.SXServiceClient, sp *api.Supply) {
 	mu.Lock()
-	if sp.SupplyName == "PCounterMulti" {
-		log.Printf("Broadcast PCS (%4d bytes)", len(sp.Cdata.Entity))
-		ioserv.BroadcastToRoom("/", "#", "pcs", sp.Cdata.Entity)
-	} else if sp.SupplyName == "PCounter" {
-		pc := &protoPC.PCounter{}
-		err := proto.Unmarshal(sp.Cdata.Entity, pc)
-		if err == nil {
-			sliceHostname := strings.Split(pc.Hostname, "-vc3d-")
-			sid, _ := strconv.Atoi(sliceHostname[0])
-			pcj := &PCJ{
-				SID: uint8(sid),
-			}
-			for _, v := range pc.Data {
-				if v.Typ == "counter" && v.Id == "1" {
-					pcj.Data = append(pcj.Data, &PCDJ{
-						Time:   v.Ts.AsTime().UnixNano() / 1000000,
-						Height: v.Height,
-						Dir:    v.Dir,
-					})
-				}
-			}
-			if len(pcj.Data) > 0 {
-				jsonBytes, _ := json.Marshal(pcj)
-				//log.Printf("Broadcast PC (%4d bytes) %+v", len(sp.Cdata.Entity), pcj)
-				ioserv.BroadcastToRoom("/", "#", "pc", jsonBytes)
-			} else {
-				// log.Printf("Broadcast PC (%4d bytes) [Skipped] %+v", len(sp.Cdata.Entity), pcj)
-			}
-		} else {
-			log.Printf("Unmarshaling err PC: %v", err)
-		}
-	} else {
-		log.Printf("Broadcast Unknown (%4d bytes)", len(sp.Cdata.Entity))
-		ioserv.BroadcastToRoom("/", "#", "unk_pc", sp.Cdata.Entity)
-	}
+
 	mu.Unlock()
 }
 
