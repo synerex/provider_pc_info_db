@@ -62,7 +62,7 @@ func init() {
 	db, err = sql.Open("mysql", addr)
 	if err != nil {
 		print("connection error: ")
-		print(err)
+		log.Println(err)
 		log.Fatal("\n")
 	}
 
@@ -70,7 +70,7 @@ func init() {
 	err = db.Ping()
 	if err != nil {
 		print("ping error: ")
-		print(err)
+		log.Println(err)
 		log.Fatal("\n")
 	}
 
@@ -78,7 +78,7 @@ func init() {
 	_, err = db.Exec("create table if not exists users(id BIGINT unsigned NOT NULL AUTO_INCREMENT, sub CHAR(36) NOT NULL, username VARCHAR(64) NOT NULL, email VARCHAR(256) NOT NULL, primary key(id))")
 	if err != nil {
 		print("create users table error: ")
-		print(err)
+		log.Println(err)
 		log.Fatal("\n")
 	}
 
@@ -86,7 +86,7 @@ func init() {
 	_, err = db.Exec("create table if not exists data_source_groups(id BIGINT unsigned NOT NULL AUTO_INCREMENT, parent_id BIGINT unsigned NOT NULL, user_id BIGINT unsigned NOT NULL, name VARCHAR(256) NOT NULL, opt VARCHAR(1024) NOT NULL, foreign key fk_user_id (user_id) references users(id), primary key(id))")
 	if err != nil {
 		print("create data_source_groups table error: ")
-		print(err)
+		log.Println(err)
 		log.Fatal("\n")
 	}
 
@@ -94,7 +94,7 @@ func init() {
 	_, err = db.Exec("create table if not exists data_sources(id BIGINT unsigned NOT NULL, user_id BIGINT unsigned NOT NULL, group_id BIGINT unsigned NOT NULL, name VARCHAR(256) NOT NULL, type INT NOT NULL, latitude DOUBLE NOT NULL DEFAULT 0, longitude DOUBLE NOT NULL DEFAULT 0, radius DOUBLE NOT NULL DEFAULT 0, opt VARCHAR(1024) NOT NULL, foreign key fk_user_id (user_id) references users(id), foreign key fk_group_id (group_id) references data_source_groups(id), primary key(id))")
 	if err != nil {
 		print("create data_sources table error: ")
-		print(err)
+		log.Println(err)
 		log.Fatal("\n")
 	}
 
@@ -102,7 +102,7 @@ func init() {
 	_, err = db.Exec("create table if not exists data_stores(id BIGINT unsigned NOT NULL AUTO_INCREMENT, type INT NOT NULL, addr VARCHAR(1024) NOT NULL, auth_username VARCHAR(64) NOT NULL, auth_password VARCHAR(1024) NOT NULL, opt VARCHAR(1024) NOT NULL, primary key(id))")
 	if err != nil {
 		print("create data_stores table error: ")
-		print(err)
+		log.Println(err)
 		log.Fatal("\n")
 	}
 
@@ -110,7 +110,7 @@ func init() {
 	_, err = db.Exec("create table if not exists data_saves(id BIGINT unsigned NOT NULL AUTO_INCREMENT, data_source_id BIGINT unsigned NOT NULL, `from` DATETIME NOT NULL, `to` DATETIME NOT NULL, data_store_id BIGINT unsigned NOT NULL, path VARCHAR(1024) NOT NULL, opt VARCHAR(1024) NOT NULL, foreign key fk_data_source_id (data_source_id) references data_sources(id), foreign key fk_data_store_id (data_store_id) references data_stores(id), primary key(id))")
 	if err != nil {
 		print("create data_saves table error: ")
-		print(err)
+		log.Println(err)
 		log.Fatal("\n")
 	}
 
@@ -118,7 +118,7 @@ func init() {
 	_, err = db.Exec("create table if not exists perms(id BIGINT unsigned NOT NULL AUTO_INCREMENT, user_id BIGINT unsigned NOT NULL, data_source_id BIGINT unsigned NOT NULL, granularity_time INT, granularity_mesh INT, opt VARCHAR(1024), foreign key fk_user_id (user_id) references users(id), foreign key fk_data_source_id (data_source_id) references data_sources(id), primary key(id))")
 	if err != nil {
 		print("create perms table error: ")
-		print(err)
+		log.Println(err)
 		log.Fatal("\n")
 	}
 }
