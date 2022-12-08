@@ -160,17 +160,11 @@ func init() {
 	  END IF;
 	
 	
-	  FOR chunk IN
-	  SELECT show.oid
-	  FROM show_chunks(ht, older_than => lag)
-	  SHOW (oid)
-		INNER JOIN pg_class pgc ON pgc.oid = show.oid
-		INNER JOIN pg_tablespace pgts ON pgts.oid = pgc.reltablespace
-	  WHERE pgts.spcname != destination
-	  LOOP
-		RAISE NOTICE 'Moving chunk: %', chunk::text;
-		EXECUTE format('ALTER TABLE %s SET TABLESPACE %I;', chunk, destination);
-	  END LOOP;
+	  PERFORM move_chunk(
+		chunk => i,
+		destination_tablespace => destination,
+		index_destination_tablespace => destination
+	  ) FROM show_chunks(ht, older_than => lag) i;
 	END
 	$$;`)
 	if err != nil {
