@@ -123,6 +123,22 @@ func init() {
 		log.Println(err)
 		log.Fatal("\n")
 	}
+
+	// create fast tablespace
+	_, err = db.Exec(ctx, "CREATE TABLESPACE fast_space LOCATION '/fast_store'")
+	if err != nil {
+		print("create fast_space tablespace error: ")
+		log.Println(err)
+		// log.Fatal("\n")
+	}
+
+	// create slow tablespace
+	_, err = db.Exec(ctx, "CREATE TABLESPACE slow_space LOCATION '/slow_store'")
+	if err != nil {
+		print("create slow_space tablespace error: ")
+		log.Println(err)
+		// log.Fatal("\n")
+	}
 }
 
 func supplyPCINFDBCallback(clt *sxutil.SXServiceClient, sp *api.Supply) {
