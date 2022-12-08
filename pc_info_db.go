@@ -139,6 +139,45 @@ func init() {
 		log.Println(err)
 		// log.Fatal("\n")
 	}
+
+	// create move_old_chunks procedure
+	_, err = db.Exec(ctx, `CREATE OR REPLACE PROCEDURE move_old_chunks (job_id int, config jsonb)
+	LANGUAGE PLPGSQL
+	AS $$
+	DECLARE
+	  ht REGCLASS;
+	  lag interval;
+	  destination name;
+	  chunk REGCLASS;
+	BEGIN
+	  SELECT jsonb_object_field_text (config, 'hypertable')::regclass INTO STRICT ht;
+	  SELECT jsonb_object_field_text (config, 'lag')::interval INTO STRICT lag;
+	  SELECT jsonb_object_field_text (config, 'tablespace') INTO STRICT destination;
+	
+	
+	  IF ht IS NULL OR lag IS NULL OR destination IS NULL THEN
+		RAISE EXCEPTION 'Config must have hypertable, lag and destination';
+	  END IF;
+	
+	
+	  FOR chunk IN
+	  SELECT show.oid
+	  FROM show_chunks(ht, older_than => lag)
+	  SHOW (oid)
+		INNER JOIN pg_class pgc ON pgc.oid = show.oid
+		INNER JOIN pg_tablespace pgts ON pgts.oid = pgc.reltablespace
+	  WHERE pgts.spcname != destination
+	  LOOP
+		RAISE NOTICE 'Moving chunk: %', chunk::text;
+		EXECUTE format('ALTER TABLE %s SET TABLESPACE %I;', chunk, destination);
+	  END LOOP;
+	END
+	$$;`)
+	if err != nil {
+		print("CREATE OR REPLACE PROCEDURE move_old_chunks error: ")
+		log.Println(err)
+		// log.Fatal("\n")
+	}
 }
 
 func supplyPCINFDBCallback(clt *sxutil.SXServiceClient, sp *api.Supply) {
