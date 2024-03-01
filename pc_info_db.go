@@ -101,6 +101,18 @@ func init() {
 	}
 
 	// create data_source_hardwares table
+	// To select unconverted mac address, use the following SQL:
+	//
+	// SELECT
+	//   sid,
+	//   lpad(to_hex((mac >> 40) & 255), 2, '0') || ':' ||
+	//   lpad(to_hex((mac >> 32) & 255), 2, '0') || ':' ||
+	//   lpad(to_hex((mac >> 24) & 255), 2, '0') || ':' ||
+	//   lpad(to_hex((mac >> 16) & 255), 2, '0') || ':' ||
+	//   lpad(to_hex((mac >> 8) & 255), 2, '0') || ':' ||
+	//   lpad(to_hex(mac & 255), 2, '0') as mac, hostname, operation_start_time, operation_end_time, hardware_version, hardware_serial, hardware_model
+	// FROM data_source_hardwares LIMIT 50;
+    //
 	_, err = db.Exec(ctx, `create table if not exists data_source_hardwares (id BIGSERIAL NOT NULL, sid BIGINT NOT NULL, mac BIGINT not null, hostname VARCHAR(24) not null,
 		operation_start_time timestamp not null, operation_end_time timestamp not null,
 		hardware_version varchar(64), hardware_serial varchar(64), hardware_model varchar(64),
