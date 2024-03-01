@@ -100,6 +100,19 @@ func init() {
 		log.Fatal("\n")
 	}
 
+	// create data_source_hardwares table
+	_, err = db.Exec(ctx, `create table if not exists data_source_hardwares (id BIGSERIAL NOT NULL, sid BIGINT NOT NULL, mac BIGINT not null, hostname VARCHAR(24) not null,
+		operation_start_time timestamp not null, operation_end_time timestamp not null,
+		hardware_version varchar(64), hardware_serial varchar(64), hardware_model varchar(64),
+		constraint data_source_hardwares_unique_pk unique (mac, operation_start_time, operation_end_time),
+		foreign key (sid) references data_sources(id), primary key(id)
+	)`)
+	if err != nil {
+		print("create data_source_hardwares table error: ")
+		log.Println(err)
+		log.Fatal("\n")
+	}
+
 	// create data_stores table
 	_, err = db.Exec(ctx, "create table if not exists data_stores(id BIGSERIAL NOT NULL, type INT NOT NULL, addr VARCHAR(1024) NOT NULL, auth_username VARCHAR(64) NOT NULL, auth_password VARCHAR(1024) NOT NULL, opt VARCHAR(1024) NOT NULL, primary key(id))")
 	if err != nil {
