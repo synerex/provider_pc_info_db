@@ -150,7 +150,7 @@ func init() {
 	}
 
 	// create fast tablespace
-	_, err = db.Exec(ctx, "CREATE TABLESPACE fast_space LOCATION '/var/lib/postgresql/fast_store'")
+	_, err = db.Exec(ctx, "CREATE TABLESPACE fast_space LOCATION '/var/lib/postgresql/fast_store/data'")
 	if err != nil {
 		print("create fast_space tablespace error: ")
 		log.Println(err)
@@ -158,7 +158,7 @@ func init() {
 	}
 
 	// create slow tablespace
-	_, err = db.Exec(ctx, "CREATE TABLESPACE slow_space LOCATION '/var/lib/postgresql/slow_store'")
+	_, err = db.Exec(ctx, "CREATE TABLESPACE slow_space LOCATION '/var/lib/postgresql/slow_store/data'")
 	if err != nil {
 		print("create slow_space tablespace error: ")
 		log.Println(err)
